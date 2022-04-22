@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 class Planet:
     def __init__(self, id, name, description):
@@ -11,3 +11,16 @@ planets = [
     Planet(2, "Venus", "named for the Roman goddess of love and beauty"),
     Planet(3, "Neptune", "named for the Roman god of water")
 ]
+
+planets_bp = Blueprint("planets", __name__)
+@planets_bp.route("/planets", methods=["GET"])
+def get_all_planets():
+    response = []
+    for planet in planets:
+        response.append({
+            'id': planet.id,
+            'name': planet.name,
+            'description': planet.description
+        })
+    return jsonify(response)
+    
