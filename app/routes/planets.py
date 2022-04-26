@@ -13,8 +13,8 @@ planets = [
     Planet(3, "Neptune", "named for the Roman god of water", 14)
 ]
 
-planets_bp = Blueprint("planets", __name__)
-@planets_bp.route("/planets", methods=["GET"])
+planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
+@planets_bp.route("", methods=["GET"])
 def get_all_planets():
     response = []
     for planet in planets:
@@ -25,4 +25,25 @@ def get_all_planets():
             'moons': planet.moons
         })
     return jsonify(response)
-    
+
+@planets_bp.route("/<planet_id>", methods=["GET"])
+def get_one_planet(planet_id):
+    try:
+        planet_id = int(planet_id)
+    except ValueError:
+        return jsonify({'msg': f"Planet ID '{planet_id}' is invalid. Please enter an Integer"}), 400
+
+
+    chosen_planet = None
+    for planet in planets:
+        if planet.id == planet_id:
+            chosen_planet = {
+                'id': planet.id,
+                'name': planet.name,
+                'description': planet.description,
+                'moons': planet.moons
+            }
+
+    if chosen_planet is None:
+        return jsonify({'msg': f"Planet {planet_id} not found."}), 404
+    return jsonify(chosen_planet)
