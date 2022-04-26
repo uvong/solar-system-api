@@ -21,7 +21,8 @@ def get_all_planets():
         response.append({
             'id': planet.id,
             'name': planet.name,
-            'description': planet.description
+            'description': planet.description,
+            'moons': planet.moons
         })
     return jsonify(response)
     
