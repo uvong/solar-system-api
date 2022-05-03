@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, make_response
+from flask import Blueprint, jsonify, request, make_response, abort
 from app import db
 from app.models.planet import Planet
 
@@ -27,6 +27,57 @@ def handle_planets():
                 'moons': planet.moons
             })
         return jsonify(planets_response)
+
+@planets_bp.route("/<planet_id>", methods=["GET"])
+def get_one_planet(planet_id):
+    planet = validate_planet(planet_id)
+    return jsonify({
+        'id': planet.id,
+        'name': planet.name,
+        'description': planet.description,
+        'moons': planet.moons
+    })
+
+@planets_bp.route("/<planet_id>", methods=["PUT"])
+def update_one_planet(planet_id):
+    request_body = request.get_json()
+
+    planet = validate_planet(planet_id)
+
+    if "name" not in request_body or\
+        "description" not in request_body or\
+        "moons" not in request_body:
+        return jsonify({"msg": f"Request must include name, description, and moons"}), 400
+
+    planet.name = request_body["name"]
+    planet.description = request_body["description"]
+    planet.moons = request_body["moons"]
+
+    db.session.commit()
+
+    return make_response(f"Planet #{planet_id} successfully updated. =D")
+
+@planets_bp.route("/<planet_id>", methods=["DELETE"])
+def delete_planet(planet_id):
+    planet = validate_planet(planet_id)
+
+    db.session.delete(planet)
+    db.session.commit()
+
+    return make_response(f"Planet {planet_id} has been successfully deleted. D=<")
+
+
+def validate_planet(planet_id):
+    try:
+        planet_id = int(planet_id)
+    except ValueError:
+        abort(make_response({"message": f"Invalid id: '{planet_id}'. ID must be an integer."}, 400))
+    planet = Planet.query.get(planet_id)
+
+    if not planet:
+        abort(make_response({"msg": f"Planet {planet_id} not found"}, 404))
+    
+    return planet
 
 # def get_all_planets():
     # response = []
