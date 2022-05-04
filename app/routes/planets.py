@@ -17,7 +17,19 @@ def handle_planets():
 
         return make_response(f"Planet {new_planet.name} has been successfully created :'D", 201)
     elif request.method == "GET":
-        planets = Planet.query.all()
+        params = request.args
+        if "name" in params and "moons" in params:
+            planet_name = params["name"]
+            planet_moons = params["moons"]
+            planets = Planet.query.filter_by(name=planet_name, moons=planet_moons)
+        elif "name" in params:
+            planet_name = params["name"]
+            planets = Planet.query.filter_by(name=planet_name)
+        elif "moons" in params:
+            planet_moons = params["moons"]
+            planets = Planet.query.filter_by(moons=planet_moons)
+        else:
+            planets = Planet.query.all()
         planets_response = []
         for planet in planets:
             planets_response.append({
